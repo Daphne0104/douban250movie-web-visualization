@@ -1,0 +1,66 @@
+from flask import Flask,render_template
+import  sqlite3
+app = Flask(__name__)
+
+#訪問根路徑，就會渲染網頁出來
+@app.route('/') #路由解析
+def index():
+    return render_template("index.html") #給用戶網頁，模板渲染
+
+
+@app.route('/index') #訪問路徑index，並返回home函數
+def home():
+    return render_template("index.html") #返回網頁
+
+@app.route('/movie')
+def movie():
+    datalist = []
+    con = sqlite3.connect("movie.db")
+    cur = con.cursor()
+    sql = "select * from movie250"
+    data = cur.execute(sql)
+
+    #為了避免cursor缺失造成無法讀取資料，要先儲存起來
+    for item in data:
+        datalist.append(item)
+
+    cur.close()
+    con.close()
+    return render_template("movie.html",movies = datalist) #給用戶網頁
+
+@app.route('/score')
+def score():
+        score=[] #評分
+        num = []    #每個評分所統計出的電影數量
+        datalist = []
+        con = sqlite3.connect("movie.db")
+        cur = con.cursor()
+        sql = "select score,count(score) from movie250 group by score"
+        data = cur.execute(sql)
+
+        # 為了避免cursor缺失造成無法讀取資料，要先儲存起來
+        for item in data:
+            score.append((item)[0])
+            num.append(item[1])
+
+        cur.close()
+        con.close()
+
+        return render_template("score.html",score=score,num=num) #給用戶網頁
+
+
+
+
+
+
+@app.route('/word')
+def word():
+    return render_template("word.html") #給用戶網頁
+
+@app.route('/team')
+def team():
+    return render_template("team.html") #給用戶網頁
+
+
+if __name__ == '__main__':
+    app.run()
